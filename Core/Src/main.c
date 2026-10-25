@@ -122,6 +122,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  /* to run one winch
+	  *int dir = HAL_GPIO_ReadPin(Winch_Direction_GPIO_Port, Winch_Direction_Pin) == GPIO_PIN_SET;
+	  *int run = HAL_GPIO_ReadPin(Winch_State_GPIO_Port, Winch_State_Pin) == GPIO_PIN_SET;
+	  *Winch_Update(run,dir);
+	  */
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
