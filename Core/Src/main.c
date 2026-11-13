@@ -279,7 +279,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-
+  PiSend_Init(&PI_UART);
   WinchSys_Init(&hi2c1);	/* Initializes winches and current sensors */
 
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
@@ -297,10 +297,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  WinchSys_SetCommand(0, winch1Cmd);
-	  WinchSys_SetCommand(1, winch2Cmd);
-	  WinchSys_Update();
-
 	  /* Safety: no good line for 250 ms -> stop thrusters and winches.
 	     The servo stays where it is. (Starts in failsafe until the first
 	     good packet, since lastPacketTick starts at 0.) */
@@ -312,10 +308,14 @@ int main(void)
 		  winch2Cmd  = 0;
 	  }
 
+	  WinchSys_SetCommand(0, winch1Cmd);
+	  WinchSys_SetCommand(1, winch2Cmd);
+	  WinchSys_Update();
+
+	  PiSend_Update();
+	  
 	  setThrusters(leftPulse, rightPulse);
 	  setServos(servoPulse);
-	  /* winch1Cmd / winch2Cmd are saved but not used yet: the winch code
-	     above is still commented out by the team. */
   }
   /* USER CODE END 3 */
 }
