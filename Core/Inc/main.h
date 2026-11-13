@@ -77,6 +77,14 @@ void Error_Handler(void);
 #define servoRightPWM_GPIO_Port GPIOB
 #define Left_High_Pin GPIO_PIN_10
 #define Left_High_GPIO_Port GPIOB
+#define W2_Left_Low_Pin GPIO_PIN_12
+#define W2_Left_Low_GPIO_Port GPIOB
+#define W2_Left_High_Pin GPIO_PIN_13
+#define W2_Left_High_GPIO_Port GPIOB
+#define W2_Right_Low_Pin GPIO_PIN_14
+#define W2_Right_Low_GPIO_Port GPIOB
+#define W2_Right_High_Pin GPIO_PIN_15
+#define W2_Right_High_GPIO_Port GPIOB
 #define Right_High_Pin GPIO_PIN_8
 #define Right_High_GPIO_Port GPIOA
 #define PI_TX_Pin GPIO_PIN_9

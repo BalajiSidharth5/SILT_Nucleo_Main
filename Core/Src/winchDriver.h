@@ -19,6 +19,7 @@ typedef enum {
     WINCH_UP,
     WINCH_DOWN,
     WINCH_COOLDOWN,
+    WINCH_STALLED,
     WINCH_FAULT
 } WinchState;
 
@@ -37,12 +38,20 @@ typedef struct {
     uint32_t   stateEnteredMs;
 } Winch;
 
-/* Call once after MX_GPIO_Init(). */
 void Winch_Init(Winch *w);
 
+/* cmd: 0 = stop, 1 = down, 2 = up */
 void Winch_Update(Winch *w, int cmd);
 
 /* Turns all four bridge outputs off. Safe to call from Error_Handler. Needs to be called individually for each winch*/
 void Winch_Stop(Winch *w);
+
+/* Stall seen by the current sensor: stop now, run again only after cmd 0. */
+void Winch_Stall(Winch *w);
+
+/* Stop and stay stopped until reset (current sensor missing or accidental shoo thro). */
+void Winch_Fault(Winch *w);
+
+int Winch_IsDriving(const Winch *w);
 
 #endif /* SRC_WINCHDRIVER_H_ */

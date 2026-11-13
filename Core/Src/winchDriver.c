@@ -9,34 +9,13 @@
 #include "main.h"
 
 /*
- * REQUIRED CODE IN main.c
+ * SETUP
  * requires 8 outpins configured with userlabels
  * {Right_High,Right_Low,Left_High,Left_Low}
  * {W2_Right_High,W2_Right_Low, W2_Left_High, W2_Left_Low}
  *
- * requires winch1Cmd/winch2Cmd from recieve function
- *
- *USER CODE PV
- *static Winch winches[] = {
-	//Winch one pins
-  { .rh = {Right_High_GPIO_Port, Right_High_Pin}, .rl = {Right_Low_GPIO_Port, Right_Low_Pin},
-    .lh = {Left_High_GPIO_Port,  Left_High_Pin},  .ll = {Left_Low_GPIO_Port,  Left_Low_Pin} },
-	//Winch two pins (placeholders currently)
-  { .rh = {W2_Right_High_GPIO_Port, W2_Right_High_Pin}, .rl = {W2_Right_Low_GPIO_Port, W2_Right_Low_Pin},
-    .lh = {W2_Left_High_GPIO_Port,  W2_Left_High_Pin},  .ll = {W2_Left_Low_GPIO_Port,  W2_Left_Low_Pin} },
-};
- *
- *USER CODE BEGIN 2
- *Winch_Init(&winches[0]);
-  Winch_Init(&winches[1]);
- *
- *while(1)
- *Winch_Update(&winches[0], winch1Cmd);
- *Winch_Update(&winches[0], Winch_Update(&winches[1], winch2Cmd);
- *
- *USER CODE BEGIN ERROR HANDLER
- *Winch_Stop(&winches[0]);
- *Winch_Stop(&winches[1]);
+ * The winches[] table, Winch_Init/Winch_Update calls and current-sensor
+ * stall checks all live in winchSystem.c. main.c only calls WinchSys_*.
  */
 
 /*
@@ -45,6 +24,7 @@
  * WINCH_UP - up pattern on, if in WINCH_DOWN before starts 500 ms cooldown for mechanical/electrical stress reduction
  * WINCH_DOWN - down pattern on, if in WINCH_DOWN before starts 500 ms cooldown for mechanical/electrical stress reduction
  * WINCH_COOLDOWN - prementioned cooldown state, utizilzes HAL_tick to wait 500ms without halting code.
+ * WINCH_STALLED - current sensor saw a stall; stopped until the command goes back to 0, then cooldown
  * WINCH_FAULT - emergency stop until program reset
  */
 
@@ -62,7 +42,7 @@ static void enter(Winch *w, WinchState s)
 static void send_signal(Winch *w, int rh, int rl, int lh, int ll)
 {
     if ((rh && rl) || (lh && ll)) {
-        /* Shoo through protection */
+        /* Shoot through protection */
         Winch_Stop(w);
         enter(w, WINCH_FAULT);
         return;
@@ -100,6 +80,24 @@ void Winch_Init(Winch *w)
 {
     Winch_Stop(w);
     enter(w, WINCH_START);
+}
+
+void Winch_Stall(Winch *w)
+{
+    Winch_Stop(w);
+    if (w->state != WINCH_FAULT)        /* never downgrade a fault */
+        enter(w, WINCH_STALLED);
+}
+
+void Winch_Fault(Winch *w)
+{
+    Winch_Stop(w);
+    enter(w, WINCH_FAULT);
+}
+
+int Winch_IsDriving(const Winch *w)
+{
+    return (w->state == WINCH_UP) || (w->state == WINCH_DOWN);
 }
 
 void Winch_Update(Winch *w, int cmd)
@@ -140,12 +138,14 @@ void Winch_Update(Winch *w, int cmd)
             enter(w, WINCH_IDLE);
         break;
 
+    case WINCH_STALLED:
+        Winch_Stop(w);
+        if (!runReq) enter(w, WINCH_COOLDOWN);   /* operator released: re-arm */
+        break;
+
     case WINCH_FAULT:
     default:
         Winch_Stop(w);
         break;
     }
 }
-
-
-
