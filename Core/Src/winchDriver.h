@@ -11,7 +11,7 @@
 
 #include "main.h"
 
-#define WINCH_COOLDOWN_MS 500u
+#define WINCH_COOLDOWN_MS 250u
 
 typedef enum {
     WINCH_START = 0,
