@@ -38,7 +38,7 @@ uint16_t PiSend_BuildLine(char *buf, uint16_t size)
     /* Step 1: data part, "$I,w1mA,w1mV,w2mA,w2mV,s1,s2*" */
 	//I assume s1 and s2 are states of motor but need to confirm
 
-    int len = snprintf(buf, size, "$I,%ld,%lu,%ld,%lu,%u,%u*",
+    int len = snprintf(buf, size, "$%ld,%lu,%ld,%lu,%u,%u*",
                        (long)WinchSys_GetCurrentmA(0), (unsigned long)WinchSys_GetBusmV(0),
                        (long)WinchSys_GetCurrentmA(1), (unsigned long)WinchSys_GetBusmV(1),
                        (unsigned)WinchSys_GetState(0), (unsigned)WinchSys_GetState(1));
